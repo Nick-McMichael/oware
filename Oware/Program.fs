@@ -105,8 +105,11 @@ let collectAndSow n board =
             let seeds = getSeeds n board // Retrieve the amount of seeds collected from chosen house
             match seeds >= 1 with // Can only collect from house with one or more seeds
             | true -> 
-                let newBoard = setSeeds n board 0 // setting chosen house amount of seeds to 0 as they have been collected
-                distributeSeeds seeds (n+1) {newBoard with State = NorthTurn} // sowing collected seeds recursively starting from next house
+                let temp = setSeeds n board 0 // setting chosen house amount of seeds to 0 as they have been collected
+                let newBoard = distributeSeeds seeds (n+1) {temp with State = NorthTurn} // sowing collected seeds recursively starting from next house
+                match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
+                |_,_,_,_,_,_,0,0,0,0,0,0 -> board //North has no move, thus this move was ilegal and no change is made
+                |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //North has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
     | NorthTurn -> // North's turn
@@ -115,8 +118,11 @@ let collectAndSow n board =
             let seeds = getSeeds n board 
             match seeds >=1 with
             | true -> 
-                let newBoard = setSeeds n board 0 //Collect seeds and set house seeds to 0
-                distributeSeeds seeds (n+1) {newBoard with State = SouthTurn} //Same as before, note State alternates after succesful turn
+                let temp = setSeeds n board 0 //Collect seeds and set house seeds to 0
+                let newBoard = distributeSeeds seeds (n+1) {temp with State = SouthTurn} //Same as before, note State alternates after succesful turn
+                match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
+                |0,0,0,0,0,0,_,_,_,_,_,_ -> board //South has no move, thus this move was ilegal and no change is made
+                |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //South has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
  
@@ -133,7 +139,8 @@ let start position =
     | South -> {Houses = 4,4,4,4,4,4,4,4,4,4,4,4 ; P1 = p1 ; P2 = p2 ; State = SouthTurn}
     | North -> {Houses = 4,4,4,4,4,4,4,4,4,4,4,4 ; P1 = p1 ; P2 = p2 ; State = NorthTurn}
 
-let score board = failwith "Not implemented"
+let score board = 
+    (board.P1.CapturedSeeds,board.P2.CapturedSeeds)
 
 let gameState board = 
     printState board.State
