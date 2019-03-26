@@ -69,17 +69,65 @@ let getSeeds n board =
         | 1 -> a | 2 -> b | 3 -> c | 4 -> d  | 5 -> e  | 6 -> f
         | 7 -> g | 8 -> h | 9 -> i | 10 -> j | 11 -> k | 12 -> l
         | _ -> failwith "Exception: Invalid house number"
+
+let getSeeds2 n board =
+    match n-1 with
+    |0 -> getSeeds 12 board
+    |_ -> getSeeds (n - 1) board
+    
+let getHouse n =
+    match n-1 with
+    |0 -> 12
+    |_ -> n-1
    
+
+    ///////////////////////////////////////////////////////////////////////////////
+let rec captureSeeds n board = 
+    //match baord>state 
+    match (n>6,board.State) with
+    |(true, NorthTurn) -> 
+             let newBoard = {board with P1 = { board.P1 with CapturedSeeds = (board.P1.CapturedSeeds + getSeeds n board)}}
+             let newnewBoard = setSeeds n newBoard 0
+
+             //newnewBoard
+             match (n-1 > 6) && (getSeeds2 (n) newnewBoard) = 2 || (getSeeds2 (n) newnewBoard) = 3 with
+             |true -> captureSeeds (getHouse n) newnewBoard
+             |false -> 
+                match newnewBoard.P1.CapturedSeeds > 24 with
+                |true -> {newnewBoard with State = SouthWon}
+                |false -> newnewBoard
+                
+
+
+    |(false, SouthTurn) -> 
+              let newBoard = {board with P2 = { board.P2 with CapturedSeeds = (board.P2.CapturedSeeds + getSeeds n board)}}
+              let newnewBoard = setSeeds n newBoard 0
+              //newnewBoard
+              match (n-1 > 0) && (getSeeds2 (n) newnewBoard) = 2 || (getSeeds2 (n) newnewBoard) = 3 with
+              |true -> captureSeeds (getHouse n) newnewBoard
+              |false ->
+                match newnewBoard.P2.CapturedSeeds > 24 with
+                |true -> {newnewBoard with State = NorthWon}
+                |false -> newnewBoard
+ ///////////////////////////////////////////////////////////////////////////////
 // Makes use of getSeeds and setSeeds
 // Contains recursive function distributeSeeds to 'sow' collected seeds anticlockwise
 // around the board.
 // NOTE: The recursive funcion is triggered from the match statement below it.
+
+
 let collectAndSow n board =
     let collectionHouse = n //Keeping track of the initial house chosen to collect seeds from
     
     let rec distributeSeeds seeds houseNo boardn = 
         match seeds = 0 with 
-        |true -> boardn // BASE CASE
+        |true -> 
+            match getSeeds2 (houseNo) boardn with
+            |2 -> captureSeeds (getHouse houseNo) boardn
+            |3 -> captureSeeds (getHouse houseNo) boardn
+            |_ -> boardn
+           // boardn
+             // BASE CASE
         | _ -> //RECURSIVE CASE----------------------------------------------------------------------------------------------------------
             match houseNo = collectionHouse with //Skipping the initial house as seeds can't be sown there.
             | true -> 
@@ -106,7 +154,9 @@ let collectAndSow n board =
             match seeds >= 1 with // Can only collect from house with one or more seeds
             | true -> 
                 let temp = setSeeds n board 0 // setting chosen house amount of seeds to 0 as they have been collected
+                //let FinalHousePlacedIn = n + seeds
                 let newBoard = distributeSeeds seeds (n+1) {temp with State = NorthTurn} // sowing collected seeds recursively starting from next house
+
                 match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
                 |_,_,_,_,_,_,0,0,0,0,0,0 -> board //North has no move, thus this move was ilegal and no change is made
                 |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //North has a move, the move is legal
@@ -126,7 +176,7 @@ let collectAndSow n board =
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
  
-let captureSeeds n board = failwith "not implemented"
+
 
 let useHouse n board = // TODO ........ Sowing passes tests so far..
     collectAndSow n board
@@ -139,14 +189,28 @@ let start position =
     | South -> {Houses = 4,4,4,4,4,4,4,4,4,4,4,4 ; P1 = p1 ; P2 = p2 ; State = SouthTurn}
     | North -> {Houses = 4,4,4,4,4,4,4,4,4,4,4,4 ; P1 = p1 ; P2 = p2 ; State = NorthTurn}
 
+let playGame numbers =
+    let rec play xs game =
+        match xs with
+        | [] -> game
+        | x::xs -> play xs (useHouse x game)
+    play numbers (start South)
+
+
 let score board = 
     (board.P1.CapturedSeeds,board.P2.CapturedSeeds)
 
 let gameState board = 
     printState board.State
 
+
+
 [<EntryPoint>]
 let main _ =
-    let b = useHouse 1 (start South)
-    printfn "Hello from F#!"
-    0 // return an integer exit code
+    //let ``Seeds are captured when there are 2 or 3 of them`` () =
+    let x = score (playGame [2; 11; 3; 10; 4; 12; 1; 8; 6; 7; 5; 12; 2; 11; 1; 10])
+    
+    
+    
+    0
+     // return an integer exit code
