@@ -177,7 +177,8 @@ let collectAndSow n board =
                 let newBoard = distributeSeeds seeds (n+1) {temp with State = NorthTurn} // sowing collected seeds recursively starting from next house
 
                 match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
-                |_,_,_,_,_,_,0,0,0,0,0,0 -> newBoard //North has no move, thus this move was ilegal and no change is made
+                |0,0,0,0,0,0,0,0,0,0,0,0 -> newBoard
+                |_,_,_,_,_,_,0,0,0,0,0,0 -> board //North has no move, thus this move was ilegal and no change is made
                 |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //North has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
@@ -190,7 +191,8 @@ let collectAndSow n board =
                 let temp = setSeeds n board 0 //Collect seeds and set house seeds to 0
                 let newBoard = distributeSeeds seeds (n+1) {temp with State = SouthTurn} //Same as before, note State alternates after succesful turn
                 match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
-                |0,0,0,0,0,0,_,_,_,_,_,_ -> newBoard //South has no move, thus this move was ilegal and no change is made
+                |0,0,0,0,0,0,0,0,0,0,0,0 -> newBoard
+                |0,0,0,0,0,0,_,_,_,_,_,_ -> board //South has no move, thus this move was ilegal and no change is made
                 |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //South has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
