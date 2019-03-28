@@ -1,5 +1,6 @@
 ﻿module Oware
 
+
 open System.Drawing
 
 //Used to define player one and two board rows
@@ -176,7 +177,7 @@ let collectAndSow n board =
                 let newBoard = distributeSeeds seeds (n+1) {temp with State = NorthTurn} // sowing collected seeds recursively starting from next house
 
                 match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
-                |_,_,_,_,_,_,0,0,0,0,0,0 -> board //North has no move, thus this move was ilegal and no change is made
+                |_,_,_,_,_,_,0,0,0,0,0,0 -> newBoard //North has no move, thus this move was ilegal and no change is made
                 |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //North has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
@@ -189,7 +190,7 @@ let collectAndSow n board =
                 let temp = setSeeds n board 0 //Collect seeds and set house seeds to 0
                 let newBoard = distributeSeeds seeds (n+1) {temp with State = SouthTurn} //Same as before, note State alternates after succesful turn
                 match newBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
-                |0,0,0,0,0,0,_,_,_,_,_,_ -> board //South has no move, thus this move was ilegal and no change is made
+                |0,0,0,0,0,0,_,_,_,_,_,_ -> newBoard //South has no move, thus this move was ilegal and no change is made
                 |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //South has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
@@ -226,7 +227,11 @@ let gameState board =
 [<EntryPoint>]
 let main _ =
     //let ``Seeds are captured when there are 2 or 3 of them`` () =
-    let x = score (playGame [2; 11; 3; 10; 4; 12; 1; 8; 6; 7; 5; 12; 2; 11; 1; 10])
+    let ``kl`` () =
+         playGame [6; 8; 5; 9; 4; 12; 3; 10; 1; 11; 2; 12; 5; 7; 5; 11; 6; 8; 1; 12; 4; 10; 5; 9;
+            2; 11; 3; 12; 6; 9; 5; 10; 2; 11; 1; 12; 4; 7; 6; 7; 3; 8; 5; 9; 6; 10; 1; 11;
+            2; 12; 3; 8; 4; 9; 1; 10; 6; 7; 2; 8; 3; 9; 4; 10; 5; 11; 6; 12]
+    kl ()
     
     
     
