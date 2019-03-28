@@ -86,29 +86,47 @@ let rec captureSeeds n board =
     //match baord>state 
     match (n>6,board.State) with
     |(true, NorthTurn) -> 
-             let newBoard = {board with P1 = { board.P1 with CapturedSeeds = (board.P1.CapturedSeeds + getSeeds n board)}}
-             let newnewBoard = setSeeds n newBoard 0
 
-             //newnewBoard
-             match (n-1 > 6) && (getSeeds2 (n) newnewBoard) = 2 || (getSeeds2 (n) newnewBoard) = 3 with
-             |true -> captureSeeds (getHouse n) newnewBoard
-             |false -> 
+        let newBoard = {board with P1 = { board.P1 with CapturedSeeds = (board.P1.CapturedSeeds + getSeeds n board)}}
+        let newnewBoard = setSeeds n newBoard 0
+             
+        match (n-1 > 6) && (getSeeds2 (n) newnewBoard) = 2 || (getSeeds2 (n) newnewBoard) = 3 with
+        |true -> captureSeeds (getHouse n) newnewBoard
+        |false -> 
+            match newnewBoard.P1.CapturedSeeds = 24 && newnewBoard.P2.CapturedSeeds = 24 with
+            |true -> {newnewBoard with State = GameEndedDraw}
+            |false ->
                 match newnewBoard.P1.CapturedSeeds > 24 with
                 |true -> {newnewBoard with State = SouthWon}
-                |false -> newnewBoard
-                
+                |false -> 
+                    match newnewBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
+                    |_,_,_,_,_,_,0,0,0,0,0,0 -> board //North has no move, thus this move was ilegal and no change is made
+                    |_,_,_,_,_,_,_,_,_,_,_,_ -> newnewBoard //North has a move, the move is legal  
+
 
 
     |(false, SouthTurn) -> 
+
               let newBoard = {board with P2 = { board.P2 with CapturedSeeds = (board.P2.CapturedSeeds + getSeeds n board)}}
               let newnewBoard = setSeeds n newBoard 0
-              //newnewBoard
+
               match (n-1 > 0) && (getSeeds2 (n) newnewBoard) = 2 || (getSeeds2 (n) newnewBoard) = 3 with
               |true -> captureSeeds (getHouse n) newnewBoard
               |false ->
-                match newnewBoard.P2.CapturedSeeds > 24 with
-                |true -> {newnewBoard with State = NorthWon}
-                |false -> newnewBoard
+                    match newnewBoard.P1.CapturedSeeds = 24 && newnewBoard.P2.CapturedSeeds = 24 with
+                    |true -> {newnewBoard with State = GameEndedDraw}
+                    |false ->
+                        match newnewBoard.P2.CapturedSeeds > 24 with
+                        |true -> {newnewBoard with State = NorthWon}
+                        |false -> 
+                            match newnewBoard.Houses with // this match statment now checks that the new board has left a move open for the next player
+                            |0,0,0,0,0,0,_,_,_,_,_,_ -> board //North has no move, thus this move was ilegal and no change is made
+                            |_,_,_,_,_,_,_,_,_,_,_,_ -> newnewBoard //North has a move, the move is legal
+                
+
+           
+
+     |_,_ -> board
  ///////////////////////////////////////////////////////////////////////////////
 // Makes use of getSeeds and setSeeds
 // Contains recursive function distributeSeeds to 'sow' collected seeds anticlockwise
@@ -175,7 +193,7 @@ let collectAndSow n board =
                 |_,_,_,_,_,_,_,_,_,_,_,_ -> newBoard //South has a move, the move is legal
             | _ -> board // invalid house was chosen, board unchanged and try again
         | _ -> board // invalid house was chosen, board unchanged and try again
- 
+    |_ -> failwith "78ju8ji8ji8ji"
 
 
 let useHouse n board = // TODO ........ Sowing passes tests so far..
